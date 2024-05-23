@@ -7,7 +7,7 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb+srv://samad:samad@cluster0.zzzurtt.mongodb.net/usersdb?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb+srv://samad:samad@cluster0.zzzurtt.mongodb.net/usersdb?retryWrites=true&w=majority&tls=true', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -28,6 +28,19 @@ app.post('/register', async (req, res) => {
     res.status(201).send('User registered');
   } catch (error) {
     res.status(400).send('Error registering user');
+  }
+});
+
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email, password });
+    if (!user) {
+      return res.status(400).send('Invalid credentials');
+    }
+    res.status(200).send('User logged in');
+  } catch (error) {
+    res.status(500).send('Error logging in user');
   }
 });
 
