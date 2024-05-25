@@ -3,27 +3,25 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 
-require('dotenv').config(); // Load environment variables
-
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'yourSecretKey',
+  secret: 'yourSecretKey',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV === 'production' } // secure cookies in production
+  cookie: { secure: false } // for development; use secure: true in production with HTTPS
 }));
 
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect('mongodb+srv://samad:samad@cluster0.zzzurtt.mongodb.net/usersdb?retryWrites=true&w=majority&tls=true', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
 const UserSchema = new mongoose.Schema({
   name: String,
-  email: { type: String, unique: true },
+  email: String,
   password: String,
 });
 
