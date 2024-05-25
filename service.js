@@ -2,30 +2,26 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const bcrypt = require('bcrypt');
-const dotenv = require('dotenv');
-
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'yourSecretKey',
+  secret: 'yourSecretKey',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV === 'production' } // secure cookies in production
+  cookie: { secure: false } // for development; use secure: true in production with HTTPS
 }));
 
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect('mongodb+srv://samad:samad@cluster0.zzzurtt.mongodb.net/usersdb?retryWrites=true&w=majority&tls=true', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
 const UserSchema = new mongoose.Schema({
   name: String,
-  email: { type: String, unique: true },
+  email: String,
   password: String,
 });
 
@@ -34,24 +30,19 @@ const User = mongoose.model('User', UserSchema);
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
+    const newUser = new User({ name, email, password });
     await newUser.save();
     res.status(201).send('User registered');
   } catch (error) {
-    if (error.code === 11000) {
-      res.status(400).send('Email already registered');
-    } else {
-      res.status(400).send('Error registering user');
-    }
+    res.status(400).send('Error registering user');
   }
 });
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
-    if (!user || !await bcrypt.compare(password, user.password)) {
+    const user = await User.findOne({ email, password });
+    if (!user) {
       return res.status(400).send('Invalid credentials');
     }
     req.session.user = { name: user.name, email: user.email }; // Save user info in session
