@@ -46,11 +46,12 @@ app.post('/login', async (req, res) => {
       return res.status(400).send('Invalid credentials');
     }
     req.session.user = { name: user.name, email: user.email }; // Save user info in session
-    res.status(200).send('User logged in');
+    res.status(200).json({ name: user.name, email: user.email }); // Return user details
   } catch (error) {
     res.status(500).send('Error logging in user');
   }
 });
+
 
 app.get('/current-user', (req, res) => {
   if (req.session.user) {
